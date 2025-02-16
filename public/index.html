@@ -56,6 +56,31 @@
         const updateBtn = document.getElementById('update-btn');
         const pairedUsersDiv = document.getElementById('paired-users');
 
+        // Function to update the display of elements based on auth state.
+        function updateDisplay(isLoggedIn) {
+            if (isLoggedIn) {
+                // When logged in: Hide sign in button; show everything else.
+                signInBtn.style.display = "none";
+                signOutBtn.style.display = "block";
+                userInfoDiv.style.display = "block";
+                usersListDiv.style.display = "block";
+                consentCheckbox.style.display = "inline-block";
+                apiKeyInput.style.display = "inline-block";
+                updateBtn.style.display = "block";
+                pairedUsersDiv.style.display = "block";
+            } else {
+                // When logged out: Show sign in button; hide everything else.
+                signInBtn.style.display = "block";
+                signOutBtn.style.display = "none";
+                userInfoDiv.style.display = "none";
+                usersListDiv.style.display = "none";
+                consentCheckbox.style.display = "none";
+                apiKeyInput.style.display = "none";
+                updateBtn.style.display = "none";
+                pairedUsersDiv.style.display = "none";
+            }
+        }
+
         // Sign in with Google.
         signInBtn.addEventListener('click', () => {
             signInWithPopup(auth, provider)
@@ -72,6 +97,8 @@
             signOut(auth)
                 .then(() => {
                     console.log("Signed out");
+                    updateDisplay(false);
+                    // Clear UI.
                     userInfoDiv.innerHTML = "";
                     usersListDiv.innerHTML = "";
                     pairedUsersDiv.innerHTML = "";
@@ -84,6 +111,7 @@
         // When auth state changes, fetch the user's document and update the UI.
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                updateDisplay(true);
                 userInfoDiv.innerHTML = `<p>Welcome <strong>${user.displayName}</strong> (${user.email})</p>`;
                 const userDocRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
@@ -132,9 +160,7 @@
                     refreshUserList();
                 });
             } else {
-                userInfoDiv.innerHTML = "";
-                usersListDiv.innerHTML = "";
-                pairedUsersDiv.innerHTML = "";
+                updateDisplay(false);
             }
         });
 
